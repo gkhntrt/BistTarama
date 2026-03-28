@@ -111,7 +111,7 @@ def plot_stock_chart(data, ticker_name):
     ax3.grid(True)
 
     # İmza ekleme
-    fig.text(0.5, 0.5, 'Bay-P',
+    fig.text(0.5, 0.5, 'Bay-G',
              fontsize=50, color='gray', alpha=0.15,
              ha='center', va='center',
              weight='bold', style='italic', rotation=20)
