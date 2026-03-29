@@ -245,23 +245,29 @@ if st.button("🔍 Taramayı Başlat"):
                     MA20: {row['MA20']} | MA50: {row['MA50']}<br>
                     <b>Dolaşımdaki Lot:</b> {lot}<br>
                     <b>Halka Açıklık Oranı:</b> {halka_aciklik}<br><br>
-                    # 📊 Finansal Oranlar için güvenli çekim
+                    # -*- coding: utf-8 -*-
+                     import streamlit as st
+                     
+                     # Örnek info dict (Yahoo Finance gibi)
+                     # info = yf.Ticker("GARAN.IS").info
+                     
+                     # 📊 Finansal Oranlar için güvenli çekim
                      price = info.get("currentPrice") or info.get("regularMarketPrice")
                      eps = info.get("trailingEps")
                      book = info.get("bookValue")
                      shares = info.get("sharesOutstanding")
                      
-                     # F/K
+                     # F/K (önce direkt, yoksa hesapla)
                      fk = info.get("trailingPE")
                      if not fk and price and eps:
                          fk = price / eps
                      
-                     # PD/DD
+                     # PD/DD (önce direkt, yoksa hesapla)
                      pddd = info.get("priceToBook")
                      if not pddd and price and book:
                          pddd = price / book
                      
-                     # Piyasa Değeri
+                     # Piyasa Değeri (önce direkt, yoksa hesapla)
                      market_cap = info.get("marketCap")
                      if not market_cap and shares and price:
                          market_cap = shares * price
@@ -271,10 +277,10 @@ if st.button("🔍 Taramayı Başlat"):
                      pddd_str = f"{pddd:.2f}" if isinstance(pddd, (int, float)) else "N/A"
                      market_cap_usd_str = f"{market_cap:,.0f}" if isinstance(market_cap, (int, float)) else "N/A"
                      
-                     # Streamlit HTML
+                     # Streamlit HTML (emoji UTF-8 ile güvenli)
                      st.markdown(f"""
                      <div>
-                     📊 <b>Finansal Oranlar</b><br>
+                     &#128202; <b>Finansal Oranlar</b><br>
                      F/K: <b>{fk_str}</b><br>
                      PD/DD: <b>{pddd_str}</b><br>
                      Piyasa Değeri: <b>{market_cap_usd_str}</b>
