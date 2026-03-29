@@ -66,5 +66,7 @@ def get_all_bist_tickers():
         "TRGYO.IS", "TRILC.IS", "TTRAK.IS", "TUKAS.IS", "TURSG.IS", "TURSH.IS", "TURPS.IS", "TSPOR.IS",
         "ULKER.IS", "ULUUN.IS", "ULUSE.IS", "UZERB.IS", "VAKFN.IS", "VBTYZ.IS", "VERUS.IS", "VESBE.IS",
         "VESTL.IS", "VKING.IS", "YAPRK.IS", "YATAS.IS", "YGGYO.IS", "YGYO.IS", "YUNSA.IS", "ZOREN.IS",
-        "ZRGYO.IS", "YIGIT.IS", "DOFRB.IS"
+        "ZRGYO.IS", "YIGIT.IS", "DOFRB.IS", "MARMR.IS", "ECOGR.IS", "VAKFA.IS", "PAHOL.IS", "ZERGY.IS",
+        "ARFYE.IS", "MEYSU.IS", "FRMPL.IS", "UCAYM.IS", "NETCD.IS", "AKHAN.IS", "BESTE.IS", "ATATR.IS",
+        "EMPAE.IS", "SVGYO.IS", "GENKM.IS", "LXGYO.IS", "MCARD.IS", "AAGYO.IS",
     ]
