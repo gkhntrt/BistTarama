@@ -245,12 +245,41 @@ if st.button("🔍 Taramayı Başlat"):
                     MA20: {row['MA20']} | MA50: {row['MA50']}<br>
                     <b>Dolaşımdaki Lot:</b> {lot}<br>
                     <b>Halka Açıklık Oranı:</b> {halka_aciklik}<br><br>
-                    📊 <b>Finansal Oranlar</b><br>
-                    F/K: <b>{info.get("trailingPE", "N/A")}</b><br>
-                    PD/DD: <b>{info.get("priceToBook", "N/A")}</b><br>
-                    Piyasa Değeri: <b>{market_cap_usd_str}</b>
-                </div>
-                """, unsafe_allow_html=True)
+                    # 📊 Finansal Oranlar için güvenli çekim
+                     price = info.get("currentPrice") or info.get("regularMarketPrice")
+                     eps = info.get("trailingEps")
+                     book = info.get("bookValue")
+                     shares = info.get("sharesOutstanding")
+                     
+                     # F/K
+                     fk = info.get("trailingPE")
+                     if not fk and price and eps:
+                         fk = price / eps
+                     
+                     # PD/DD
+                     pddd = info.get("priceToBook")
+                     if not pddd and price and book:
+                         pddd = price / book
+                     
+                     # Piyasa Değeri
+                     market_cap = info.get("marketCap")
+                     if not market_cap and shares and price:
+                         market_cap = shares * price
+                     
+                     # Formatlama
+                     fk_str = f"{fk:.2f}" if isinstance(fk, (int, float)) else "N/A"
+                     pddd_str = f"{pddd:.2f}" if isinstance(pddd, (int, float)) else "N/A"
+                     market_cap_usd_str = f"{market_cap:,.0f}" if isinstance(market_cap, (int, float)) else "N/A"
+                     
+                     # Streamlit HTML
+                     st.markdown(f"""
+                     <div>
+                     📊 <b>Finansal Oranlar</b><br>
+                     F/K: <b>{fk_str}</b><br>
+                     PD/DD: <b>{pddd_str}</b><br>
+                     Piyasa Değeri: <b>{market_cap_usd_str}</b>
+                     </div>
+                     """, unsafe_allow_html=True)
 
                 data_plot = prepare_data_for_plot(ticker_full)
                 if data_plot is not None:
