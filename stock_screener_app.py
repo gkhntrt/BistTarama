@@ -172,3 +172,14 @@ if st.button("🔍 Tara"):
             """, unsafe_allow_html=True)
 
             plot_chart(r["Data"], hisse)
+
+ # İmza ekleme
+    fig.text(0.5, 0.5, 'Bay-G',
+             fontsize=50, color='gray', alpha=0.15,
+             ha='center', va='center',
+             weight='bold', style='italic', rotation=20)
+
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.clf()
+
