@@ -24,7 +24,8 @@ def load_lot_data():
 halka_aciklik_dict = load_halaciklik_data()
 dolasim_lot_dict = load_lot_data()
 
-# 🔥 TEK API ÇAĞRISI
+# ---------------------- TEK API ----------------------
+
 @st.cache_data(ttl=600)
 def get_bulk_data(tickers):
     return yf.download(
@@ -49,12 +50,39 @@ def calculate_rsi(series, period=14):
 # ---------------------- Grafik ----------------------
 
 def plot_chart(df, name):
-    fig, ax = plt.subplots(figsize=(10,4))
-    ax.plot(df.index, df["Close"])
-    ax.set_title(name)
-    ax.grid()
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10,8), sharex=True)
+
+    # MA
+    df["MA20"] = df["Close"].rolling(20).mean()
+    df["MA50"] = df["Close"].rolling(50).mean()
+
+    ax1.plot(df.index, df["Close"], label="Fiyat")
+    ax1.plot(df.index, df["MA20"], label="MA20")
+    ax1.plot(df.index, df["MA50"], label="MA50")
+    ax1.legend()
+    ax1.grid()
+
+    # RSI
+    rsi = calculate_rsi(df["Close"])
+    ax2.plot(df.index, rsi, label="RSI")
+    ax2.axhline(70)
+    ax2.axhline(30)
+    ax2.legend()
+    ax2.grid()
+
+    # MACD
+    ema12 = df["Close"].ewm(span=12).mean()
+    ema26 = df["Close"].ewm(span=26).mean()
+    macd = ema12 - ema26
+    signal = macd.ewm(span=9).mean()
+
+    ax3.plot(df.index, macd, label="MACD")
+    ax3.plot(df.index, signal, label="Signal")
+    ax3.legend()
+    ax3.grid()
+
     st.pyplot(fig)
-    plt.clf()
+    plt.close(fig)  # 🔥 MEMORY FIX
 
 # ---------------------- TARAYICI ----------------------
 
@@ -63,9 +91,12 @@ def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_t
 
     for t in tickers:
         try:
-            df = data[t].dropna()
-            if len(df) < 30:
+            df = data.get(t)
+
+            if df is None or df.empty or len(df) < 30:
                 continue
+
+            df = df.dropna()
 
             df["MA20"] = df["Close"].rolling(20).mean()
             df["MA50"] = df["Close"].rolling(50).mean()
@@ -79,7 +110,12 @@ def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_t
             if ceil_th and change < ceil_th:
                 continue
 
-            vol_ratio = df["Volume"].iloc[-1] / df["VOLAVG"].iloc[-1]
+            avg_vol = df["VOLAVG"].iloc[-1]
+
+            if avg_vol is None or avg_vol == 0 or pd.isna(avg_vol):
+                continue
+
+            vol_ratio = df["Volume"].iloc[-1] / avg_vol
 
             cond_ma = close < min(df["MA20"].iloc[-1], df["MA50"].iloc[-1]) * (1 + ma_tol)
             cond_vol = vol_ratio >= vol_th
@@ -115,7 +151,7 @@ use_ceil = st.sidebar.checkbox("Tavan",False)
 tickers = get_all_bist_tickers()
 selected = st.sidebar.multiselect("Hisse", tickers)
 
-# ---------------------- Ana ----------------------
+# ---------------------- ANA ----------------------
 
 if st.button("🔍 Tara"):
 
