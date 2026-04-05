@@ -182,9 +182,12 @@ if st.button("🔍 Tara"):
     else:
         st.success(f"{len(results)} hisse bulundu")
         for r in results:
-            hisse = r["Hisse"]
-            lot = dolasim_lot_dict.get(hisse,"N/A")
-           Kodunun içine yanlışlıkla açıklama metni ve tipografik tırnak (`’`) girmiş, bu yüzden `SyntaxError` aldın. Python yalnızca düz `'` veya `"` tırnaklarını kabul eder. Aşağıda **temizlenmiş ve çalışır tam kod**u paylaşıyorum; hem PD/DD, F/K ve piyasa değeri otomatik çekiliyor hem de Bollinger Bands ve Stochastic Oscillator eklenmiş durumda:
+            hisse =Şu anda yaşadığın hata, kodun içine açıklama metni ve Türkçe cümlelerin karışmasından kaynaklanıyor. Python dosyasında **sadece kod** olmalı; araya yazı girince indentation (girinti) bozuluyor.  
+
+Aşağıda tamamen temizlenmiş, çalışır **tam kod**u paylaşıyorum. Bu sürümde:
+- PD/DD, F/K ve piyasa değeri otomatik olarak Yahoo Finance’tan çekiliyor.
+- Grafiklerde Bollinger Bands ve Stochastic Oscillator eklendi.
+- Kodun içinde açıklama metni yok, sadece Python kodu var.
 
 ```python
 import streamlit as st
@@ -364,10 +367,4 @@ if st.button("🔍 Tara"):
         group_by="ticker",
         threads=True
     )
-    results = scan(data, tickers_to_scan, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil, use_ma200)
-
-    if not results:
-        st.warning("Kriterlere uyan hisse yok")
-    else:
-        st.success(f"{len(results)} hisse bulundu")
-        for
+    results = scan(data, tickers_to_scan, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil, use_ma
