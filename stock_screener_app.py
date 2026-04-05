@@ -24,19 +24,7 @@ def load_lot_data():
 halka_aciklik_dict = load_halaciklik_data()
 dolasim_lot_dict = load_lot_data()
 
-# ---------------------- TEK API ----------------------
-
-@st.cache_data(ttl=600)
-def get_bulk_data(tickers):
-    return yf.download(
-        tickers,
-        period="6mo",
-        interval="1d",
-        group_by="ticker",
-        threads=True
-    )
-
-# ---------------------- Teknik ----------------------
+# ---------------------- Teknik hesaplamalar ----------------------
 
 def calculate_rsi(series, period=14):
     delta = series.diff()
@@ -47,28 +35,28 @@ def calculate_rsi(series, period=14):
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
-# ---------------------- Grafik ----------------------
+# ---------------------- Grafik hazırlama ----------------------
 
 def plot_chart(df, name):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10,8), sharex=True)
+    fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(10,8), sharex=True)
 
-    # MA'lar
-    df["MA20"] = df["Close"].rolling(20).mean()
-    df["MA50"] = df["Close"].rolling(50).mean()
-    df["MA200"] = df["Close"].rolling(200).mean()
+    # MA’lar
+    df["MA20"] = df["Close"].rolling(20, min_periods=1).mean()
+    df["MA50"] = df["Close"].rolling(50, min_periods=1).mean()
+    df["MA200"] = df["Close"].rolling(200, min_periods=1).mean()  # 🔥 artık her zaman çizilir
 
-    ax1.plot(df.index, df["Close"], label="Fiyat")
-    ax1.plot(df.index, df["MA20"], label="MA20")
-    ax1.plot(df.index, df["MA50"], label="MA50")
-    ax1.plot(df.index, df["MA200"], label="MA200")  # 🔥 EKLENDİ
+    ax1.plot(df.index, df["Close"], label="Fiyat", color="blue")
+    ax1.plot(df.index, df["MA20"], label="MA20", color="orange", linewidth=1.5)
+    ax1.plot(df.index, df["MA50"], label="MA50", color="green", linewidth=1.5)
+    ax1.plot(df.index, df["MA200"], label="MA200", color="red", linewidth=2, linestyle="--")
     ax1.legend()
     ax1.grid()
 
     # RSI
     rsi = calculate_rsi(df["Close"])
-    ax2.plot(df.index, rsi, label="RSI")
-    ax2.axhline(70)
-    ax2.axhline(30)
+    ax2.plot(df.index, rsi, label="RSI", color="purple")
+    ax2.axhline(70, color="red", linestyle="--")
+    ax2.axhline(30, color="green", linestyle="--")
     ax2.legend()
     ax2.grid()
 
@@ -78,15 +66,16 @@ def plot_chart(df, name):
     macd = ema12 - ema26
     signal = macd.ewm(span=9).mean()
 
-    ax3.plot(df.index, macd, label="MACD")
-    ax3.plot(df.index, signal, label="Signal")
+    ax3.plot(df.index, macd, label="MACD", color="blue")
+    ax3.plot(df.index, signal, label="Signal", color="orange")
+    ax3.bar(df.index, macd-signal, label="Hist", color="gray", alpha=0.4)
     ax3.legend()
     ax3.grid()
 
     st.pyplot(fig)
     plt.close(fig)
 
-# ---------------------- TARAYICI ----------------------
+# ---------------------- Tarama ----------------------
 
 def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_th, use_ma200):
     results = []
@@ -94,43 +83,32 @@ def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_t
     for t in tickers:
         try:
             df = data.get(t)
-
             if df is None or df.empty or len(df) < 30:
                 continue
-
             df = df.dropna()
 
-            df["MA20"] = df["Close"].rolling(20).mean()
-            df["MA50"] = df["Close"].rolling(50).mean()
-            df["MA200"] = df["Close"].rolling(200).mean()
-
+            df["MA20"] = df["Close"].rolling(20, min_periods=1).mean()
+            df["MA50"] = df["Close"].rolling(50, min_periods=1).mean()
+            df["MA200"] = df["Close"].rolling(200, min_periods=1).mean()
             df["RSI"] = calculate_rsi(df["Close"])
-            df["VOLAVG"] = df["Volume"].rolling(20).mean()
+            df["VOLAVG"] = df["Volume"].rolling(20, min_periods=1).mean()
 
             close = df["Close"].iloc[-1]
             prev = df["Close"].iloc[-2]
-            change = ((close - prev) / prev) * 100
+            change = ((close - prev)/prev)*100
 
             if ceil_th and change < ceil_th:
                 continue
 
-            avg_vol = df["VOLAVG"].iloc[-1]
-            if avg_vol is None or avg_vol == 0 or pd.isna(avg_vol):
-                continue
+            vol_ratio = df["Volume"].iloc[-1] / df["VOLAVG"].iloc[-1]
 
-            vol_ratio = df["Volume"].iloc[-1] / avg_vol
-
-            cond_ma = close < min(df["MA20"].iloc[-1], df["MA50"].iloc[-1]) * (1 + ma_tol)
+            cond_ma = close < min(df["MA20"].iloc[-1], df["MA50"].iloc[-1]) * (1+ma_tol)
             cond_vol = vol_ratio >= vol_th
             cond_rsi = df["RSI"].iloc[-1] <= rsi_th
 
-            # 🔥 MA200 filtresi (opsiyonel)
             cond_ma200 = True
             if use_ma200:
-                ma200 = df["MA200"].iloc[-1]
-                if pd.isna(ma200):
-                    continue
-                cond_ma200 = close > ma200  # sadece üstündekiler
+                cond_ma200 = close > df["MA200"].iloc[-1]
 
             if (not use_ma or cond_ma) and (not use_vol or cond_vol) and (not use_rsi or cond_rsi) and cond_ma200:
                 results.append({
@@ -141,16 +119,13 @@ def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_t
                     "Vol": round(vol_ratio,2),
                     "Data": df
                 })
-
         except:
             continue
-
     return results
 
 # ---------------------- Sidebar ----------------------
 
-st.sidebar.header("Filtre")
-
+st.sidebar.header("Filtreler")
 ma_tol = st.sidebar.slider("MA Tol %",1,10,5)/100
 vol_th = st.sidebar.slider("Hacim",0.0,5.0,1.5)
 use_ma = st.sidebar.checkbox("MA",True)
@@ -158,46 +133,33 @@ use_vol = st.sidebar.checkbox("Hacim",True)
 use_rsi = st.sidebar.checkbox("RSI",False)
 rsi_th = st.sidebar.slider("RSI",10,50,30)
 use_ceil = st.sidebar.checkbox("Tavan",False)
-
-# 🔥 YENİ
-use_ma200 = st.sidebar.checkbox("Sadece MA200 Üstü", False)
+use_ma200 = st.sidebar.checkbox("Sadece MA200 Üstü",False)
 
 tickers = get_all_bist_tickers()
-selected = st.sidebar.multiselect("Hisse", tickers)
+selected = st.sidebar.multiselect("Hisse Seç", tickers)
 
-# ---------------------- ANA ----------------------
+# ---------------------- Ana ----------------------
 
 if st.button("🔍 Tara"):
-
     tickers_to_scan = selected if selected else tickers
     ceil = 9.5 if use_ceil else None
-
-    data = get_bulk_data(tickers_to_scan)
-
-    results = scan(
-        data,
+    data = yf.download(
         tickers_to_scan,
-        ma_tol,
-        vol_th,
-        use_ma,
-        use_vol,
-        use_rsi,
-        rsi_th,
-        ceil,
-        use_ma200
+        period="6mo",
+        interval="1d",
+        group_by="ticker",
+        threads=True
     )
+    results = scan(data, tickers_to_scan, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil, use_ma200)
 
     if not results:
-        st.warning("Hisse yok")
+        st.warning("Kriterlere uyan hisse yok")
     else:
-        st.success(f"{len(results)} bulundu")
-
+        st.success(f"{len(results)} hisse bulundu")
         for r in results:
             hisse = r["Hisse"]
-
             lot = dolasim_lot_dict.get(hisse,"N/A")
             halka = halka_aciklik_dict.get(hisse,"N/A")
-
             color = "green" if r["Change"]>=0 else "red"
 
             st.markdown(f"""
