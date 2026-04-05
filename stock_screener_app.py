@@ -23,7 +23,6 @@ def load_lot_data():
 
 halka_aciklik_dict = load_halaciklik_data()
 dolasim_lot_dict = load_lot_data()
-
 def get_financial_ratios(ticker):
     try:
         info = yf.Ticker(ticker).info
