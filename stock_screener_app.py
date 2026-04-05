@@ -24,6 +24,18 @@ def load_lot_data():
 halka_aciklik_dict = load_halaciklik_data()
 dolasim_lot_dict = load_lot_data()
 
+def get_financial_ratios(ticker):
+    try:
+        info = yf.Ticker(ticker).info
+        return {
+            "F/K": round(info.get("trailingPE", 0), 2) if info.get("trailingPE") else "N/A",
+            "PD/DD": round(info.get("priceToBook", 0), 2) if info.get("priceToBook") else "N/A",
+            "Piyasa_Değeri": info.get("marketCap", "N/A")
+        }
+    except:
+        return {"F/K":"N/A","PD/DD":"N/A","Piyasa_Değeri":"N/A"}
+
+
 # ---------------------- Teknik hesaplamalar ----------------------
 
 def calculate_rsi(series, period=14):
