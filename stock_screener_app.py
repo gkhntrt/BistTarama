@@ -7,8 +7,6 @@ from tickers import get_all_bist_tickers
 st.set_page_config(page_title="BIST Hisse Analiz", layout="centered")
 st.title("📈 Hisse Analiz")
 
-# ---------------------- Veri yükleme ----------------------
-
 @st.cache_data
 def load_halaciklik_data():
     df = pd.read_excel("temelozet.xlsx")
@@ -35,8 +33,6 @@ def get_financial_ratios(ticker):
     except:
         return {"F/K":"N/A","PD/DD":"N/A","Piyasa_Değeri":"N/A"}
 
-# ---------------------- Teknik hesaplamalar ----------------------
-
 def calculate_rsi(series, period=14):
     delta = series.diff()
     gain = delta.clip(lower=0)
@@ -46,12 +42,9 @@ def calculate_rsi(series, period=14):
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
-# ---------------------- Grafik hazırlama ----------------------
-
 def plot_chart(df, name):
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(10,10), sharex=True)
 
-    # MA’lar
     df["MA20"] = df["Close"].rolling(20, min_periods=1).mean()
     df["MA50"] = df["Close"].rolling(50, min_periods=1).mean()
     df["MA200"] = df["Close"].rolling(200, min_periods=1).mean()
@@ -61,7 +54,6 @@ def plot_chart(df, name):
     ax1.plot(df.index, df["MA50"], label="MA50", color="green")
     ax1.plot(df.index, df["MA200"], label="MA200", color="red", linestyle="--")
 
-    # Bollinger Bands
     df["STD20"] = df["Close"].rolling(20).std()
     df["Upper"] = df["MA20"] + 2*df["STD20"]
     df["Lower"] = df["MA20"] - 2*df["STD20"]
@@ -69,14 +61,12 @@ def plot_chart(df, name):
     ax1.plot(df.index, df["Lower"], label="Lower BB", color="gray", linestyle="--")
     ax1.legend(); ax1.grid()
 
-    # RSI
     rsi = calculate_rsi(df["Close"])
     ax2.plot(df.index, rsi, label="RSI", color="purple")
     ax2.axhline(70, color="red", linestyle="--")
     ax2.axhline(30, color="green", linestyle="--")
     ax2.legend(); ax2.grid()
 
-    # MACD
     ema12 = df["Close"].ewm(span=12).mean()
     ema26 = df["Close"].ewm(span=26).mean()
     macd = ema12 - ema26
@@ -86,7 +76,6 @@ def plot_chart(df, name):
     ax3.bar(df.index, macd-signal, label="Hist", color="gray", alpha=0.4)
     ax3.legend(); ax3.grid()
 
-    # Stochastic Oscillator
     low14 = df["Low"].rolling(14).min()
     high14 = df["High"].rolling(14).max()
     df["%K"] = 100*((df["Close"]-low14)/(high14-low14))
@@ -100,8 +89,6 @@ def plot_chart(df, name):
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
-
-# ---------------------- Tarama ----------------------
 
 def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_th, use_ma200):
     results = []
@@ -148,8 +135,6 @@ def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_t
             continue
     return results
 
-# ---------------------- Sidebar ----------------------
-
 st.sidebar.header("Filtreler")
 ma_tol = st.sidebar.slider("MA Tol %",1,10,5)/100
 vol_th = st.sidebar.slider("Hacim",0.0,5.0,1.5)
@@ -162,8 +147,6 @@ use_ma200 = st.sidebar.checkbox("Sadece MA200 Üstü",False)
 
 tickers = get_all_bist_tickers()
 selected = st.sidebar.multiselect("Hisse Seç", tickers)
-
-# ---------------------- Ana ----------------------
 
 if st.button("🔍 Tara"):
     tickers_to_scan = selected if selected else tickers
@@ -182,12 +165,14 @@ if st.button("🔍 Tara"):
     else:
         st.success(f"{len(results)} hisse bulundu")
         for r in results:
-            hisse =Şu anda yaşadığın hata, kodun içine açıklama metni ve Türkçe cümlelerin karışmasından kaynaklanıyor. Python dosyasında **sadece kod** olmalı; araya yazı girince indentation (girinti) bozuluyor.  
+            hisse = r["Hisse"]
+            lot = dolasim_lot_dict.get(hisse,"N/A")
+            halka = halka_aciklik_dict.get(hisse,"N/A")
+            color = "green" if r["Change"] >= 0 else "red"
 
-Aşağıda tamamen temizlenmiş, çalışır **tam kod**u paylaşıyorum. Bu sürümde:
-- PD/DD, F/K ve piyasa değeri otomatik olarak Yahoo Finance’tan çekiliyor.
-- Grafiklerde Bollinger Bands ve Stochastic Oscillator eklendi.
-- Kodun içinde açıklama metni yok, sadece Python kodu var.
+            ratios = get_financial_ratios(hisse + ".IS")
+            fk = ratios["F/K"]
+            pddd = ratios["PD/DDTamam, işte tamamen **temizlenmiş ve çalışır kod**. İçinde artık açıklama metni yok, sadece Python kodu var. Bu haliyle `SyntaxError` veya `IndentationError` almazsın:
 
 ```python
 import streamlit as st
@@ -198,8 +183,6 @@ from tickers import get_all_bist_tickers
 
 st.set_page_config(page_title="BIST Hisse Analiz", layout="centered")
 st.title("📈 Hisse Analiz")
-
-# ---------------------- Veri yükleme ----------------------
 
 @st.cache_data
 def load_halaciklik_data():
@@ -227,8 +210,6 @@ def get_financial_ratios(ticker):
     except:
         return {"F/K":"N/A","PD/DD":"N/A","Piyasa_Değeri":"N/A"}
 
-# ---------------------- Teknik hesaplamalar ----------------------
-
 def calculate_rsi(series, period=14):
     delta = series.diff()
     gain = delta.clip(lower=0)
@@ -238,12 +219,9 @@ def calculate_rsi(series, period=14):
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
-# ---------------------- Grafik hazırlama ----------------------
-
 def plot_chart(df, name):
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(10,10), sharex=True)
 
-    # MA’lar
     df["MA20"] = df["Close"].rolling(20, min_periods=1).mean()
     df["MA50"] = df["Close"].rolling(50, min_periods=1).mean()
     df["MA200"] = df["Close"].rolling(200, min_periods=1).mean()
@@ -253,7 +231,6 @@ def plot_chart(df, name):
     ax1.plot(df.index, df["MA50"], label="MA50", color="green")
     ax1.plot(df.index, df["MA200"], label="MA200", color="red", linestyle="--")
 
-    # Bollinger Bands
     df["STD20"] = df["Close"].rolling(20).std()
     df["Upper"] = df["MA20"] + 2*df["STD20"]
     df["Lower"] = df["MA20"] - 2*df["STD20"]
@@ -261,14 +238,12 @@ def plot_chart(df, name):
     ax1.plot(df.index, df["Lower"], label="Lower BB", color="gray", linestyle="--")
     ax1.legend(); ax1.grid()
 
-    # RSI
     rsi = calculate_rsi(df["Close"])
     ax2.plot(df.index, rsi, label="RSI", color="purple")
     ax2.axhline(70, color="red", linestyle="--")
     ax2.axhline(30, color="green", linestyle="--")
     ax2.legend(); ax2.grid()
 
-    # MACD
     ema12 = df["Close"].ewm(span=12).mean()
     ema26 = df["Close"].ewm(span=26).mean()
     macd = ema12 - ema26
@@ -278,7 +253,6 @@ def plot_chart(df, name):
     ax3.bar(df.index, macd-signal, label="Hist", color="gray", alpha=0.4)
     ax3.legend(); ax3.grid()
 
-    # Stochastic Oscillator
     low14 = df["Low"].rolling(14).min()
     high14 = df["High"].rolling(14).max()
     df["%K"] = 100*((df["Close"]-low14)/(high14-low14))
@@ -292,8 +266,6 @@ def plot_chart(df, name):
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
-
-# ---------------------- Tarama ----------------------
 
 def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_th, use_ma200):
     results = []
@@ -340,8 +312,6 @@ def scan(data, tickers, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil_t
             continue
     return results
 
-# ---------------------- Sidebar ----------------------
-
 st.sidebar.header("Filtreler")
 ma_tol = st.sidebar.slider("MA Tol %",1,10,5)/100
 vol_th = st.sidebar.slider("Hacim",0.0,5.0,1.5)
@@ -355,8 +325,6 @@ use_ma200 = st.sidebar.checkbox("Sadece MA200 Üstü",False)
 tickers = get_all_bist_tickers()
 selected = st.sidebar.multiselect("Hisse Seç", tickers)
 
-# ---------------------- Ana ----------------------
-
 if st.button("🔍 Tara"):
     tickers_to_scan = selected if selected else tickers
     ceil = 9.5 if use_ceil else None
@@ -367,4 +335,22 @@ if st.button("🔍 Tara"):
         group_by="ticker",
         threads=True
     )
-    results = scan(data, tickers_to_scan, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil, use_ma
+    results = scan(data, tickers_to_scan, ma_tol, vol_th, use_ma, use_vol, use_rsi, rsi_th, ceil, use_ma200)
+
+    if not results:
+        st.warning("Kriterlere uyan hisse yok")
+    else:
+        st.success(f"{len(results)} hisse bulundu")
+        for r in results:
+            hisse = r["Hisse"]
+            lot = dolasim_lot_dict.get(hisse,"N/A")
+            halka = halka_aciklik_dict.get(hisse,"N/A")
+            color = "green" if r["Change"] >= 0 else "red"
+
+            ratios = get_financial_ratios(hisse + ".IS")
+            fk = ratios["F/K"]
+            pddd = ratios["PD/DD"]
+            pd = ratios["Piyasa_Değeri"]
+
+            st.markdown(f"""
+            <div style="border:1px solid #
