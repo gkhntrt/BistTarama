@@ -1,6 +1,3 @@
-Hata, kodun içine yanlışlıkla Türkçe açıklama metni ve tipografik tırnak (`’`) karakteri girmiş olmasından kaynaklanıyor. Python yalnızca düz ASCII `'` veya `"` tırnaklarını kabul eder. Sana temizlenmiş, çalışır **tam kodu** paylaşıyorum:
-
-```python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
