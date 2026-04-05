@@ -54,7 +54,7 @@ def plot_chart(df, name):
     # MA’lar
     df["MA20"] = df["Close"].rolling(20, min_periods=1).mean()
     df["MA50"] = df["Close"].rolling(50, min_periods=1).mean()
-    df["MA200"] = df["Close"].rolling(200, min_periods=1).mean()  # 🔥 artık her zaman çizilir
+    df["MA200"] = df["Close"].rolling(200, min_periods=1).mean()
 
     ax1.plot(df.index, df["Close"], label="Fiyat", color="blue")
     ax1.plot(df.index, df["MA20"], label="MA20", color="orange", linewidth=1.5)
@@ -83,17 +83,15 @@ def plot_chart(df, name):
     ax3.legend()
     ax3.grid()
 
-    st.pyplot(fig)
-    plt.close(fig)
-     # İmza ekleme
+    # İmza ekleme
     fig.text(0.5, 0.5, 'Bay-G',
              fontsize=50, color='gray', alpha=0.15,
              ha='center', va='center',
              weight='bold', style='italic', rotation=20)
 
     plt.tight_layout()
-    st.pyplot(fig)
-    plt.clf()
+    st.pyplot(fig)  # <-- Sadece burada çağır
+    plt.close(fig)   # <-- ve ardından figürü kapat
 
 # ---------------------- Tarama ----------------------
 
