@@ -176,7 +176,7 @@ if st.button("🔍 Tara"):
             pd = ratios["Piyasa_Değeri"]
 
             st.markdown(f"""
-            <div style="border:Tamam Gökhan, işte tamamen temizlenmiş ve çalışır **tam kod**. İçinde artık hiçbir açıklama metni yok, sadece Python kodu var. Bu haliyle `SyntaxError` veya `IndentationError` almazsın:
+            <div style="border:Gökhan, işte tamamen temizlenmiş ve çalışır **tam kod**. İçinde artık hiçbir açıklama metni yok, sadece Python kodu var. Bu haliyle `SyntaxError` veya `IndentationError` almazsın:
 
 ```python
 import streamlit as st
@@ -357,4 +357,4 @@ if st.button("🔍 Tara"):
             pd = ratios["Piyasa_Değeri"]
 
             st.markdown(f"""
-            <div style="border:
+            <div style="border:1px
